@@ -39,12 +39,12 @@ namespace Simcorp.IMS.Phone {
             Speaker.Play(sound);
         }
 
-        private void Charge(double energy) {
+        public void Charge(double energy) {
             Battery.Charge(energy);
         }
 
-        private void GiveCharge(double energy) {
-            Battery.GiveCharge(energy);
+        public void Discharge(double energy) {
+            Battery.Discharge(energy);
         }
 
         public virtual string GetDescription() {

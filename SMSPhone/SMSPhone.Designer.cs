@@ -32,13 +32,16 @@
             this.MessageListView = new System.Windows.Forms.ListView();
             this.SMSSender = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SMSText = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.SMSButton = new System.Windows.Forms.Button();
+            this.ChargeProgressBar = new System.Windows.Forms.ProgressBar();
+            this.ChargeButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // FormatComboBox
             // 
             this.FormatComboBox.ForeColor = System.Drawing.SystemColors.WindowFrame;
             this.FormatComboBox.FormattingEnabled = true;
-            this.FormatComboBox.Location = new System.Drawing.Point(25, 35);
+            this.FormatComboBox.Location = new System.Drawing.Point(25, 194);
             this.FormatComboBox.Name = "FormatComboBox";
             this.FormatComboBox.Size = new System.Drawing.Size(120, 21);
             this.FormatComboBox.TabIndex = 1;
@@ -105,11 +108,41 @@
             this.MessageListView.UseCompatibleStateImageBehavior = false;
             this.MessageListView.View = System.Windows.Forms.View.Tile;
             // 
+            // SMSButton
+            // 
+            this.SMSButton.Location = new System.Drawing.Point(25, 153);
+            this.SMSButton.Name = "SMSButton";
+            this.SMSButton.Size = new System.Drawing.Size(120, 21);
+            this.SMSButton.TabIndex = 8;
+            this.SMSButton.Text = "Send SMS";
+            this.SMSButton.UseVisualStyleBackColor = true;
+            this.SMSButton.Click += new System.EventHandler(this.SMSButton_Click);
+            // 
+            // ChargeProgressBar
+            // 
+            this.ChargeProgressBar.Location = new System.Drawing.Point(25, 35);
+            this.ChargeProgressBar.Name = "ChargeProgressBar";
+            this.ChargeProgressBar.Size = new System.Drawing.Size(120, 21);
+            this.ChargeProgressBar.TabIndex = 9;
+            // 
+            // ChargeButton
+            // 
+            this.ChargeButton.Location = new System.Drawing.Point(25, 74);
+            this.ChargeButton.Name = "ChargeButton";
+            this.ChargeButton.Size = new System.Drawing.Size(120, 21);
+            this.ChargeButton.TabIndex = 10;
+            this.ChargeButton.Text = "Charge";
+            this.ChargeButton.UseVisualStyleBackColor = true;
+            this.ChargeButton.Click += new System.EventHandler(this.ChargeButton_Click);
+            // 
             // SMSPhone
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(334, 611);
+            this.Controls.Add(this.ChargeButton);
+            this.Controls.Add(this.ChargeProgressBar);
+            this.Controls.Add(this.SMSButton);
             this.Controls.Add(this.MessageListView);
             this.Controls.Add(this.OrAndCheckBox);
             this.Controls.Add(this.ToDatePicker);
@@ -124,7 +157,6 @@
             this.Name = "SMSPhone";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "SMSPhone";
-            this.Load += new System.EventHandler(this.SMSPhone_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -140,6 +172,9 @@
         private System.Windows.Forms.ListView MessageListView;
         private System.Windows.Forms.ColumnHeader SMSSender;
         private System.Windows.Forms.ColumnHeader SMSText;
+        private System.Windows.Forms.Button SMSButton;
+        private System.Windows.Forms.ProgressBar ChargeProgressBar;
+        private System.Windows.Forms.Button ChargeButton;
     }
 }
 

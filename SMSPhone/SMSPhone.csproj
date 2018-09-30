@@ -81,6 +81,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Simcorp.IMS.Phone.Battery\Simcorp.IMS.Phone.Battery.csproj">
+      <Project>{e475a055-1017-4244-9c14-7ad445c3563e}</Project>
+      <Name>Simcorp.IMS.Phone.Battery</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Simcorp.IMS.Phone.Output\Simcorp.IMS.Phone.Output.csproj">
       <Project>{1d9f634a-2469-433f-b7d6-c90b1d3a796c}</Project>
       <Name>Simcorp.IMS.Phone.Output</Name>

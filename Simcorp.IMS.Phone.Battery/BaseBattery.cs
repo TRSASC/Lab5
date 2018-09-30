@@ -2,6 +2,9 @@
 
 namespace Simcorp.IMS.Phone.Battery {
     public abstract class BaseBattery : ICharge, IGiveCharge {
+        public delegate void CurrentChargeLevelChanged();
+        public event CurrentChargeLevelChanged ChargeChanged;
+
         private double vCapacity;
         private double vChargeLevel;
 
@@ -15,34 +18,41 @@ namespace Simcorp.IMS.Phone.Battery {
             }
         }
 
-        public double ChargeLevel {
+        protected double ChargeLevel {
             get {
-                return (int)vChargeLevel;
+                return vChargeLevel;
             }
-            protected set {
+            set {
                 if (value < 0){
                     value = 0;
                 }
-                if (value > 100){
-                    value = 100;
+                if (value > Capacity){
+                    value = Capacity;
                 }
                 vChargeLevel = value;
             }
         }
 
-        public BaseBattery(double vol){
-            Capacity = vol;
+        public int GetCurrentCharge() {
+            return Convert.ToInt32((ChargeLevel* 100 / Capacity));
         }
 
-        public abstract void Charge(double energy);
+        public BaseBattery(double vol){
+            Capacity = vol;
+            ChargeLevel = 1500;
+        }
 
-        public void GiveCharge(double energy) {
-            if (this.ChargeLevel - energy < 0) {
-               
-                ChargeLevel -= energy;
+        public void Charge(double energy) {
+            if (this.ChargeLevel + energy < this.Capacity) {
+                this.ChargeLevel += energy;
+                ChargeChanged();
             }
-            else {
-                Console.WriteLine("Battery discharged");
+        }
+
+        public void Discharge(double energy) {
+            if (ChargeLevel - energy > 0) {
+                ChargeLevel -= energy;
+                ChargeChanged();
             }
         }
     }

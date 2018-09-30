@@ -1,21 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows.Forms;
 using Simcorp.IMS.Phone;
 using Simcorp.IMS.Phone.Output;
 
 namespace SMSPhone {
 
-    public delegate string FormatDelegate(SMSMessage message); 
+    public delegate string FormatDelegate(SMSMessage message);
+    public delegate void AddMessage(SMSMessage message);
+    public delegate void UpdateProgBar();
+
     public partial class SMSPhone : Form {
         private SimCorpMobile simCorp;
         private FormatDelegate Formatter;
+        private AddMessage MsgAdder;
+        private UpdateProgBar UpdProgBar;
         private string Sender;
         private MsgStorage MsgData=new MsgStorage();
         private string allSenderItem = "All";
+        private bool SMSButtonClicked = false;
+        private bool bCharge = false;
+        private bool bDischarge = true;
+
 
         public SMSPhone() {
             simCorp = new SimCorpMobile(new ListViewOutput(MessageListView));
+            MsgAdder += AddMsgToTextBox;
             simCorp.MsgStor.MsgAdded += OnMsgAdded;
             simCorp.MsgStor.MsgRemoved += OnMsgRemoved;
 
@@ -30,27 +41,61 @@ namespace SMSPhone {
 
             SenderComboBox.Items.Add(allSenderItem);
             SenderComboBox.SelectedItem = allSenderItem;
-
             OrAndCheckBox.Checked = true;
+
+            ChargeProgressBar.Value = simCorp.Battery.GetCurrentCharge();
+            UpdProgBar += OnChargeChanged; 
+            new Thread(BatteryDischarge).Start();
+            simCorp.Battery.ChargeChanged += OnChargeLevelChanged;
         }
 
-        private void SMSPhone_Load(object sender, EventArgs e) {
-            Timer MyTimer = new Timer();
-            MyTimer.Interval = 1000;
-            MyTimer.Tick += new EventHandler(MyTimer_Tick);
-            MyTimer.Start();
+        /// <summary>
+        /// Thread methods
+        /// </summary>
+        public void SMSGenerator() {
+            while (SMSButtonClicked) {
+                simCorp.GenerateSMS();
+                Thread.Sleep(1000);
+            }
         }
 
-        private void MyTimer_Tick(object sender, EventArgs e) {
-            simCorp.GenerateSMS();
+        public void BatteryDischarge() {
+            while (bDischarge) {
+                simCorp.Discharge(10);
+                Thread.Sleep(1000);
+            }
+        }
+
+        public void BatteryCharge() {
+            while (bCharge) {
+                simCorp.Charge(30);
+                Thread.Sleep(1000);
+            }
+        }
+
+        private void OnChargeLevelChanged() {
+            try {
+                Invoke(UpdProgBar, new object[] { });
+            } catch { bCharge = bDischarge = false; }
+        }
+
+        private void OnChargeChanged() {
+            ChargeProgressBar.Value = (int)simCorp.Battery.GetCurrentCharge();
         }
 
         private void OnMsgAdded(SMSMessage message) {
+            try {
+                Invoke(MsgAdder, new object[] { message });
+            } catch { SMSButtonClicked = false; }    
+        }
+
+        public void AddMsgToTextBox(SMSMessage message) {
             if (!SenderComboBox.Items.Contains(message.User)) {
                 SenderComboBox.Items.Add(message.User);
             }
             DisplayMessages(new List<SMSMessage> { message });
         }
+
         private void OnMsgRemoved(SMSMessage message) {
             DisplayAll(simCorp.MsgStor.MsgList);
         }
@@ -59,6 +104,7 @@ namespace SMSPhone {
             FormatItem itm = (FormatItem)FormatComboBox.SelectedItem;
             Formatter = itm.FormatDel;
             DisplayAll(simCorp.MsgStor.MsgList);
+            ChargeProgressBar.Value =  simCorp.Battery.GetCurrentCharge();
         }
 
         private void SenderComboBox_SelectedIndexChanged(object sender, EventArgs e) {
@@ -121,6 +167,29 @@ namespace SMSPhone {
             }
             public override string ToString() {
                 return Name;
+            }
+        }
+
+        private void SMSButton_Click(object sender, EventArgs e) {
+            SMSButtonClicked = !SMSButtonClicked;
+            if ( SMSButtonClicked ) {
+                SMSButton.Text = "Stop send SMS";
+                new Thread(SMSGenerator).Start();
+            } else {
+                SMSButton.Text = "Send SMS";
+            }
+        }
+
+
+        private void ChargeButton_Click(object sender, EventArgs e) {
+            bCharge = !bCharge;
+            bDischarge = !bDischarge;
+            if (bCharge) {
+                ChargeButton.Text = "Stop charging";
+                new Thread(BatteryCharge).Start();
+            } else {
+                ChargeButton.Text = "Charge";
+                new Thread(BatteryDischarge).Start();
             }
         }
     }
