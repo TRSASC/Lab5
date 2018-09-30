@@ -53,7 +53,7 @@ namespace Simcorp.IMS.Phone {
         public SimCorpMobile(IOutput output) {
             Output = output;
             vModelName = "SimCorp Mobile";
-            vBattery = new LiIonBattery(3000);
+            vBattery = new LiIonBattery(3000,1500);
             vSpeaker = new StereoSpeakerSystem(new RealSpeaker(2), new RealSpeaker(2), 40, this.Output);
             vSpeakerName = nameof(StereoSpeakerSystem);
             vKeyBoard = new TouchScreenKeyboard();

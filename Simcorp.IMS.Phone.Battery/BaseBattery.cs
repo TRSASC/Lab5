@@ -37,23 +37,19 @@ namespace Simcorp.IMS.Phone.Battery {
             return Convert.ToInt32((ChargeLevel* 100 / Capacity));
         }
 
-        public BaseBattery(double vol){
+        public BaseBattery(double vol, double curChar){
             Capacity = vol;
-            ChargeLevel = 1500;
+            ChargeLevel = curChar;
         }
 
         public void Charge(double energy) {
-            if (this.ChargeLevel + energy < this.Capacity) {
                 this.ChargeLevel += energy;
                 ChargeChanged();
-            }
         }
 
         public void Discharge(double energy) {
-            if (ChargeLevel - energy > 0) {
                 ChargeLevel -= energy;
                 ChargeChanged();
-            }
         }
     }
 }
