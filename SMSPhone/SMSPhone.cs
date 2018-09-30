@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Simcorp.IMS.Phone;
 using Simcorp.IMS.Phone.Output;
@@ -19,12 +20,18 @@ namespace SMSPhone {
         private string Sender;
         private MsgStorage MsgData=new MsgStorage();
         private string allSenderItem = "All";
-        private bool SMSButtonClicked = false;
+        private bool SMSButtonClicked;
         private bool bCharge = false;
         private bool bDischarge = true;
+        Task SMSGenTask;
+        Task BatteryChargeTask;
+        Task BatteryDischargeTask;
+        
 
 
         public SMSPhone() {
+            SMSButtonClicked = false;
+
             simCorp = new SimCorpMobile(new ListViewOutput(MessageListView));
             MsgAdder += AddMsgToTextBox;
             simCorp.MsgStor.MsgAdded += OnMsgAdded;
@@ -44,32 +51,16 @@ namespace SMSPhone {
             OrAndCheckBox.Checked = true;
 
             ChargeProgressBar.Value = simCorp.Battery.GetCurrentCharge();
-            UpdProgBar += OnChargeChanged; 
-            new Thread(BatteryDischarge).Start();
+            UpdProgBar += OnChargeChanged;
+            BatteryDischargeTask = new Task(() => { Discharge(); });
+            BatteryDischargeTask.Start();
             simCorp.Battery.ChargeChanged += OnChargeLevelChanged;
         }
 
-        /// <summary>
-        /// Thread methods
-        /// </summary>
-        public void SMSGenerator() {
-            while (SMSButtonClicked) {
-                simCorp.GenerateSMS();
-                Thread.Sleep(1000);
-            }
-        }
-
-        public void BatteryDischarge() {
+        private void Discharge() {
             while (bDischarge) {
                 simCorp.Discharge(10);
-                Thread.Sleep(1000);
-            }
-        }
-
-        public void BatteryCharge() {
-            while (bCharge) {
-                simCorp.Charge(30);
-                Thread.Sleep(1000);
+                BatteryDischargeTask.Wait(1000);
             }
         }
 
@@ -174,7 +165,13 @@ namespace SMSPhone {
             SMSButtonClicked = !SMSButtonClicked;
             if ( SMSButtonClicked ) {
                 SMSButton.Text = "Stop send SMS";
-                new Thread(SMSGenerator).Start();
+                SMSGenTask = new Task(() => {
+                    while (SMSButtonClicked) {
+                        simCorp.GenerateSMS();
+                        SMSGenTask.Wait(1000);
+                    }
+                });
+                SMSGenTask.Start();
             } else {
                 SMSButton.Text = "Send SMS";
             }
@@ -186,10 +183,17 @@ namespace SMSPhone {
             bDischarge = !bDischarge;
             if (bCharge) {
                 ChargeButton.Text = "Stop charging";
-                new Thread(BatteryCharge).Start();
+                BatteryChargeTask = new Task(() => {
+                    while (bCharge) {
+                        simCorp.Charge(30);
+                        BatteryChargeTask.Wait(1000);
+                    }
+                });
+                BatteryChargeTask.Start();
             } else {
                 ChargeButton.Text = "Charge";
-                new Thread(BatteryDischarge).Start();
+                BatteryDischargeTask = new Task(() => { Discharge(); });
+                BatteryDischargeTask.Start();
             }
         }
     }
